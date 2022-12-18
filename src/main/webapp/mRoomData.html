@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .el-header {
+            background-color: #B3C0D1;
+            color: #333;
+            line-height: 60px;
+        }
+
+        .el-aside {
+            color: #333;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="css/header.css">
+</head>
+
+<body>
+<div id="app">
+    <el-container style="border: 1px solid #eee">
+        <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+            <el-menu :default-openeds="['1','2','3']">
+                <el-submenu index="1" >
+                    <template slot="title"><i class="el-icon-s-home"></i>病人管理</template>
+                    <el-menu-item index="1-1" @click="changeToInReg">病人登记</el-menu-item>
+                    <el-menu-item index="1-2" @click="changeToInQuery">病人查询</el-menu-item>
+                    <el-menu-item index="1-3" @click="changeToOutQuery">出院病人查询</el-menu-item>
+                </el-submenu>
+                <el-submenu index="2">
+                    <template slot="title"><i class="el-icon-s-data"></i>统计中心</template>
+                    <el-menu-item index="3-1" @click="changeToPatientData">病人统计</el-menu-item>
+                    <el-menu-item index="3-2" @click="changeToRoomData">病房统计</el-menu-item>
+                    <el-menu-item index="3-3" @click="changeToMedData">医生统计</el-menu-item>
+                </el-submenu>
+            </el-menu>
+        </el-aside>
+
+        <el-container>
+            <el-header style="text-align: right; height:100px; font-size: 12px; background-color: rgb(85,108,147)">
+                <div class="headerdiv">
+                    <img src="imgs/logo.png" alt="" width="80px" height="80px">
+                    <span class="name">病人管理系统——房间统计</span>
+                </div>
+                <el-button type="info" round="true" size="medium" @click="logout">退出</el-button>
+            </el-header>
+            <el-main>
+                <el-form :inline="true" :model="bed" class="demo-form-inline">
+                    <el-form-item label="床号">
+                        <el-input v-model="bed.bedID" placeholder="床号"></el-input>
+                    </el-form-item>
+                    <el-form-item label="房间号">
+                        <el-input v-model="bed.roomID" placeholder="房间号"></el-input>
+                    </el-form-item>
+                    <el-form-item label="statu">
+                        <el-input v-model="bed.statu" placeholder="statu"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="onSubmit">查询</el-button>
+                    </el-form-item>
+                </el-form>
+
+                <template>
+                    <el-table
+                            :data="tableData"
+                            style="width: 100%"
+                            :row-class-name="tableRowClassName"
+                            @selection-change="handleSelectionChange">
+                        <el-table-column
+                                type="selection"
+                                width="55">
+                        </el-table-column>
+                        <el-table-column
+                                prop="bedID"
+                                label="bedID"
+                                align="center">
+                        </el-table-column>
+                        <el-table-column
+                                prop="roomID"
+                                label="roomID"
+                                align="center">
+                        </el-table-column>
+                        <el-table-column
+                                prop="statu"
+                                label="statu"
+                                align="center">
+                        </el-table-column>
+                    </el-table>
+                </template>
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+
+
+
+</body>
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<script>
+    new Vue({
+        el: "#app",
+        mounted() {
+            this.findData();
+        },
+        data() {
+            return {
+                tableData: Array(20),
+                form: {
+                    name: '',
+                    region: '',
+                    date1: '',
+                    date2: '',
+                    delivery: false,
+                    type: [],
+                    resource: '',
+                    desc: ''
+                },
+                patient: {
+
+                },
+                bed: {
+
+                },
+                pickerOptions: {
+                    shortcuts: [{
+                        text: '今天',
+                        onClick(picker) {
+                            picker.$emit('pick', new Date());
+                        }
+                    }, {
+                        text: '昨天',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24);
+                            picker.$emit('pick', date);
+                        }
+                    }, {
+                        text: '一周前',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', date);
+                        }
+                    }]
+                },
+            }
+        },
+        methods:{
+            //入院登记
+            changeToInReg(){
+                window.location.href="/PatientInfoSystem/mInReg.html";
+            },
+            //住院查询
+            changeToInQuery(){
+                window.location.href="/PatientInfoSystem/mInQuery.html";
+            },
+            //出院查询
+            changeToOutQuery(){
+                window.location.href="/PatientInfoSystem/mOutQuery.html";
+            },
+            //病人统计
+            changeToPatientData(){
+                window.location.href="/PatientInfoSystem/mPatientData.html";
+            },
+            //病房统计
+            changeToRoomData(){
+                window.location.href="/PatientInfoSystem/mRoomData.html";
+            },
+            //医生统计
+            changeToMedData(){
+                window.location.href="/PatientInfoSystem/mMedData.html";
+            },
+            //设置行颜色不一样，区分空床位
+            tableRowClassName({row, rowIndex}) {
+
+                if (row.statu === '1') {
+                    return 'warning-row';
+                } else if (row.statu === '0') {
+                    return 'success-row';
+                }
+                return '';
+            },
+            findData(){
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/PatientInfoSystem/bed/selectAll",
+                }).then(resp=>{
+                    this.tableData = resp.data;
+                })
+            },
+            onSubmit(){
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/PatientInfoSystem/bed/selectByCondition",
+                    data:this.bed
+                }).then(resp=>{
+                    this.tableData = resp.data;
+                })
+            },
+            logout(){
+                window.location.href="/PatientInfoSystem/login.jsp"
+            },
+            // updateStatu(data){
+            //     this.$confirm('确认修改病床状态？', '提示', {
+            //         confirmButtonText: '确定',
+            //         cancelButtonText: '取消',
+            //         type: 'warning'
+            //     }).then(() => {
+            //         axios({
+            //             method: "post",
+            //             url: "http://localhost:8080/PatientInfoSystem/bed/updateBed",
+            //             data: data.bedID
+            //         }).then(resp => {
+            //             if(resp.data == "success"){
+            //                 this.$message({
+            //                     type: 'success',
+            //                     message: '更改成功!'
+            //                 });
+            //             }
+            //             this.findData();
+            //         })
+            //     }).catch(() => {
+            //         this.$message({
+            //             type: 'info',
+            //             message: '已取消删除'
+            //         });
+            //     });
+            // }
+        }
+    });
+</script>
+<style>
+     .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+
+    .el-aside {
+        color: #333;
+    }
+
+     .el-main {
+         color: #333;
+         line-height: 60px;
+         margin: 50px auto;
+         align: 10px;
+     }
+      .el-table .warning-row {
+          background: #dcd0b0;
+      }
+
+     .el-table .success-row {
+         background: #ddeed5;
+     }
+</style>
+</html>

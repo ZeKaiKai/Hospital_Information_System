@@ -1,0 +1,24 @@
+.el-header{
+    background-color: #363D40;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding-left: 0;
+
+    align-items: center;
+
+    color: #fff;
+}
+
+.headerdiv{
+    display: flex;
+    align-items: center;
+}
+
+
+.name{
+    margin-left: 15px;
+    font-size: 30px;
+}

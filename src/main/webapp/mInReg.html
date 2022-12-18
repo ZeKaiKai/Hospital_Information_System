@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .el-header {
+            background-color: #B3C0D1;
+            color: #333;
+            line-height: 60px;
+        }
+
+        .el-aside {
+            color: #333;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="css/header.css">
+</head>
+
+<body>
+<div id="app_InReg">
+    <el-container style="border: 1px solid #eee">
+        <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+            <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                <el-menu :default-openeds="['1','2','3']">
+                    <el-submenu index="1" >
+                        <template slot="title"><i class="el-icon-s-home"></i>病人管理</template>
+                        <el-menu-item index="1-1" @click="changeToInReg">病人登记</el-menu-item>
+                        <el-menu-item index="1-2" @click="changeToInQuery">病人查询</el-menu-item>
+                        <el-menu-item index="1-3" @click="changeToOutQuery">出院病人查询</el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="2">
+                        <template slot="title"><i class="el-icon-s-data"></i>统计中心</template>
+                        <el-menu-item index="3-1" @click="changeToPatientData">病人统计</el-menu-item>
+                        <el-menu-item index="3-2" @click="changeToRoomData">病房统计</el-menu-item>
+                        <el-menu-item index="3-3" @click="changeToMedData">医生统计</el-menu-item>
+                    </el-submenu>
+                </el-menu>
+            </el-aside>
+        </el-aside>
+        <el-container>
+            <el-header style="text-align: right; height:100px; font-size: 12px; background-color: rgb(85,108,147)">
+                <div class="headerdiv">
+                    <img src="imgs/logo.png" alt="" width="80px" height="80px">
+                    <span class="name">病人管理系统——入院登记</span>
+                </div>
+                <el-button type="info" round="true" size="medium" @click="logout">退出</el-button>
+            </el-header>
+            <el-main>
+                <el-form>
+                    <el-form-item label="姓 名：">
+                        <el-input placeholder="请输入内容"
+                                  v-model="regData.pName"></el-input>
+                    </el-form-item>
+                    <el-form-item label="身份证号：">
+                        <el-input placeholder="请输入内容"
+                                  v-model="regData.pID"></el-input>
+                    </el-form-item>
+                    <el-form-item label="科室：">
+                        <el-select v-model="regData.pDeptId" placeholder="请选择" @change="getRidByDept()">
+                            <el-option label="内科" value="10001"></el-option>
+                            <el-option label="外科" value="10002"></el-option>
+                            <el-option label="儿科" value="10003"></el-option>
+                            <el-option label="妇科" value="10004"></el-option>
+                            <el-option label="神经内科" value="10005"></el-option>
+                            <el-option label="呼吸与危重病科" value="10006"></el-option>
+                            <el-option label="消化内科" value="10007"></el-option>
+                            <el-option label="感染疾病科" value="10008"></el-option>
+                            <el-option label="皮肤科" value="10009"></el-option>
+                            <el-option label="中西医结合科" value="10010"></el-option>
+                            <el-option label="心血管内科" value="10011"></el-option>
+                            <el-option label="内分泌科" value="10012"></el-option>
+                            <el-option label="肾病科" value="10013"></el-option>
+                            <el-option label="普通外科" value="10014"></el-option>
+                            <el-option label="骨科" value="10015"></el-option>
+                            <el-option label="泌尿外科" value="10016"></el-option>
+                            <el-option label="烧伤整形与皮肤" value="10017"></el-option>
+                            <el-option label="妇产科" value="10018"></el-option>
+                            <el-option label="急诊医学科" value="10019"></el-option>
+                            <el-option label="新生儿病区" value="10020"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-row>
+                        <el-form-item label="病房号：" :label-width="formLabelWidth">
+                            <el-select v-model="regData.pRoomID" placeholder="请选择" @change="getAvailableBidByRid()">
+                                <el-option
+                                        v-for="item in Roomids"
+                                        :key="item"
+                                        :label="item"
+                                        :value="item">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-row>
+
+                    <el-row>
+                        <el-form-item label="病床号：" :label-width="formLabelWidth">
+                        <el-select v-model="regData.pBedId" placeholder="请选择">
+                            <el-option
+                                    v-for="item in Bedids"
+                                    :key="item"
+                                    :label="item"
+                                    :value="item">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    </el-row>
+
+                    <el-form-item label="既往病史/用药过敏：">
+                        <el-input placeholder="请输入内容"
+                                  v-model="regData.pNotice"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="OnSumbitInsert">立即创建</el-button>
+                        <el-button>取消</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+
+
+
+</body>
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<script>
+    new Vue({
+        el: "#app_InReg",
+        data() {
+            const item = {
+                date: '2016-05-02',
+                name: '王小虎',
+                address: '上海市普陀区金沙江路 1518 弄'
+            };
+            return {
+                tableData: Array(20).fill(item),
+                regData:{
+
+
+                },
+                patient: {
+
+                },
+                Roomids: [
+
+                ],
+                Bedids: [
+
+                ],
+                pickerOptions: {
+                    shortcuts: [{
+                        text: '今天',
+                        onClick(picker) {
+                            picker.$emit('pick', new Date());
+                        }
+                    }, {
+                        text: '昨天',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24);
+                            picker.$emit('pick', date);
+                        }
+                    }, {
+                        text: '一周前',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', date);
+                        }
+                    }]
+                },
+            }
+        },
+        methods:{
+            //入院登记
+            changeToInReg(){
+                window.location.href="/PatientInfoSystem/mInReg.html";
+            },
+            //住院查询
+            changeToInQuery(){
+                window.location.href="/PatientInfoSystem/mInQuery.html";
+            },
+            //病人统计
+            changeToPatientData(){
+                window.location.href="/PatientInfoSystem/mPatientData.html";
+            },
+            //出院查询
+            changeToOutQuery(){
+                window.location.href="/PatientInfoSystem/mOutQuery.html";
+            },
+            //病房统计
+            changeToRoomData(){
+                window.location.href="/PatientInfoSystem/mRoomData.html";
+            },
+            //药品统计
+            changeToMedData(){
+                window.location.href="/PatientInfoSystem/mMedData.html";
+            },
+            OnSumbitInsert(){
+
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/PatientInfoSystem/patient/insertPatient",
+                    data:this.regData
+                }).then(resp=>{
+                    if (resp.data == "success"){
+                        this.$message.success( '恭喜你，这是一条成功消息');
+
+                        clearTimeout(this.timer);  //清除延迟执行
+                        this.timer = setTimeout(()=>{   //设置延迟执行
+                            location.reload();
+                        },2000);
+                    }
+                    // 修改不成功，出现异常
+                    else{
+                        this.$message.error('添加异常，请检查你的输入！');
+
+                        clearTimeout(this.timer);  //清除延迟执行
+
+                        this.timer = setTimeout(()=>{   //设置延迟执行
+                            location.reload();
+                        },2000);
+                    }
+                })
+                // // 判断patient表中是否存在该pid,返回boolean
+                // axios({
+                //     method:"post",
+                //     url:"http://localhost:8080/PatientInfoSystem/patient/selectByCondition",
+                //     data:this.regData.pID
+                // }).then(resp=>{
+                //     // 如果存在重复
+                //     if(resp.data == "true"){
+                //         // 弹出提醒
+                //         this.$confirm('该病人已登记, 是否覆盖?', '提示', {
+                //             confirmButtonText: '确定',
+                //             cancelButtonText: '取消',
+                //             type: 'warning'
+                //         }).then(() => {
+                //             // 确认后提交，执行update操作
+                //             axios({
+                //                 method:"post",
+                //                 url:"http://localhost:8080/PatientInfoSystem/patient/updatePatient",
+                //                 data:this.regData
+                //             }).then(resp=>{
+                //                 if (resp.data == "success"){
+                //                     this.$message({
+                //                         showClose: true,
+                //                         message: '恭喜你，这是一条成功消息',
+                //                         type: 'success'
+                //                     });
+                //                     // this.selectAll();
+                //                 }
+                //             })
+                //         }).catch(() => {
+                //             this.$message({
+                //                 type: 'info',
+                //                 message: '已取消操作'
+                //             });
+                //         });
+                //     }
+                //     // 没有重复，直接执行插入
+                //     else{
+                //         axios({
+                //             method:"post",
+                //             url:"http://localhost:8080/PatientInfoSystem/patient/insertPatient",
+                //             data:this.regData
+                //         }).then(resp=>{
+                //             // if (resp.data == "success"){
+                //                 this.$message({
+                //                     showClose: true,
+                //                     message: '恭喜你，这是一条成功消息',
+                //                     type: 'success'
+                //                 });
+                //                 // this.selectAll();
+                //             // }
+                //         })
+                //     }
+                // })
+                //
+
+
+            },
+            getRidByDept(){
+                console.log("getRidByDept")
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/PatientInfoSystem/patient/getAvailableRidByDept",
+                    data:this.regData.pDeptId
+                }).then(resp=>{
+                    this.Roomids = resp.data
+                })
+            },
+            getAvailableBidByRid(){
+                console.log("getAvailableBidByRid")
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/PatientInfoSystem/patient/getAvailableBidByRid",
+                    data:this.regData.pRoomID
+                }).then(resp=>{
+                    this.Bedids = resp.data
+                })
+            },
+            logout(){
+                window.location.href="/PatientInfoSystem/login.jsp"
+            }
+        }
+    });
+</script>
+<style>
+     .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+
+    .el-aside {
+        color: #333;
+    }
+
+     .el-main {
+         color: #333;
+         line-height: 60px;
+         margin: 50px auto;
+         align: 10px;
+     }
+</style>
+</html>
